@@ -1,21 +1,33 @@
-﻿// See https://aka.ms/new-console-template for more information
-using Grpc.Core;
+﻿using Grpc.Core;
 using Grpc.Net.Client;
 using GrpcServer;
-
-Console.WriteLine("Client ishladi...");
 
 var channel = GrpcChannel.ForAddress("https://localhost:7243");
 var client = new Greeter.GreeterClient(channel);
 
-var request = new HelloRequest { Name = "Sardor" };
+using var call = client.Chat();
 
-// Streaming so‘rov
-using var call = client.SayHelloStream(request);
-
-await foreach (var reply in call.ResponseStream.ReadAllAsync())
+// Javoblarni olish — alohida Task
+var readTask = Task.Run(async () =>
 {
-    Console.WriteLine("Serverdan: " + reply.Message);
+    await foreach (var serverMessage in call.ResponseStream.ReadAllAsync())
+    {
+        Console.WriteLine($"[Serverdan] {serverMessage.User}: {serverMessage.Text}");
+    }
+});
+
+// Xabar yuborish
+for (int i = 1; i <= 3; i++)
+{
+    Console.Write("Xabar: ");
+    var text = Console.ReadLine();
+
+    await call.RequestStream.WriteAsync(new ChatMessage
+    {
+        User = "Sardor",
+        Text = text
+    });
 }
 
-Console.WriteLine("Stream tugadi");
+await call.RequestStream.CompleteAsync();
+await readTask;

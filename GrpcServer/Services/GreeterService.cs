@@ -31,5 +31,21 @@ namespace GrpcServer.Services
                 await Task.Delay(1000); // har 1 soniyada javob
             }
         }
+
+        public override async Task Chat(IAsyncStreamReader<ChatMessage> requestStream, IServerStreamWriter<ChatMessage> responseStream, ServerCallContext context)
+        {
+            // Chatdagi barcha kelgan xabarlarni o'qib, qaytarib yuboramiz
+            await foreach (var message in requestStream.ReadAllAsync())
+            {
+                Console.WriteLine($"[Server oldi] {message.User}: {message.Text}");
+
+                await responseStream.WriteAsync(new ChatMessage
+                {
+                    User = "Server",
+                    Text = $"Qabul qildim: {message.Text}"
+                });
+            }
+        }
+
     }
 }
