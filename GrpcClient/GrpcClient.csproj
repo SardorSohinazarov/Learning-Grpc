@@ -23,9 +23,4 @@
 	  <Folder Include="Protos\" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <PackageReference Include="Grpc.Net.Client" Version="2.64.0" />
-	</ItemGroup>
-
-
 </Project>
